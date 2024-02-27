@@ -82,7 +82,7 @@ gem install lolcat
 apt install wondershaper -y
 clear
 # REPO    
-    REPO="https://raw.githubusercontent.com/BvsshXyz/v1/main/"
+    REPO="https://raw.githubusercontent.com/gotza02/v1/main/"
 
 ####
 start=$(date +%s)
@@ -269,7 +269,7 @@ curl "ipinfo.io/city?token=7a814b6263b02c" > /root/.city
 MYIP=$(curl -sS ipv4.icanhazip.com)
 echo -e "\e[32mloading...\e[0m" 
 clear
-izinsc="https://raw.githubusercontent.com/BvsshXyz/izin/main/ipvps"
+izinsc="https://raw.githubusercontent.com/gotza02/izin/main/ipvps"
 # USERNAME
 rm -f /usr/bin/user
 username=$(curl $izinsc | grep $MYIP | awk '{print $2}')
@@ -327,7 +327,7 @@ TIMEZONE=$(printf '%(%H:%M:%S)T')
 <b> BAYU VPN STORE SCRIPT  </b>
 <code>────────────────────</code>
 <i>Automatic Notifications From Github</i>
-"'&reply_markup={"inline_keyboard":[[{"text":"ᴏʀᴅᴇʀ","url":"https://t.me/BayuVpnStore"}]]}' 
+"'&reply_markup={"inline_keyboard":[[{"text":"ᴏʀᴅᴇʀ","url":"https://t.me/gotza02"}]]}' 
 
     curl -s --max-time $TIMES -d "chat_id=$CHATID&disable_web_page_preview=1&text=$TEXT&parse_mode=html" $URL >/dev/null
 }
@@ -534,7 +534,7 @@ print_success "Password SSH"
 function udp_mini(){
 clear
 print_install "Memasang Service Limit IP & Quota"
-wget -q https://raw.githubusercontent.com/bayuvpn/v3/main/config/fv-tunnel && chmod +x fv-tunnel && ./fv-tunnel
+wget -q https://raw.githubusercontent.com/gotza02/v1/main/config/fv-tunnel && chmod +x fv-tunnel && ./fv-tunnel
 
 # // Installing UDP Mini
 mkdir -p /usr/local/kyt/
@@ -596,7 +596,7 @@ print_success "Dropbear"
 function ins_udpSSH(){
 clear
 print_install "Menginstall Udp-custom"
-wget -q https://raw.githubusercontent.com/zhets/project/main/ssh/udp-custom.sh
+wget -q https://raw.githubusercontent.com/gotza02/vvip/main/ssh/udp-custom.sh
 chmod +x udp-custom.sh 
 bash udp-custom.sh
 rm -fr udp-custom.sh
