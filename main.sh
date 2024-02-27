@@ -24,10 +24,10 @@ clear;clear;clear
 
   # // Banner
 echo -e "${YELLOW}----------------------------------------------------------${NC}"
-echo -e "  Welcome To BAYU TUNNELING SCRIPT ${YELLOW}(${NC}${green} Stable Edition ${NC}${YELLOW})${NC}"
+echo -e "  Welcome To B-Liv TUNNELING SCRIPT ${YELLOW}(${NC}${green} Stable Edition ${NC}${YELLOW})${NC}"
 echo -e " This Will Quick Setup VPN Server On Your Server"
-echo -e "  Auther : ${green}BAYU TUNNELING ® ${NC}${YELLOW}(${NC} ${green} YANG NYOLONG YATIM ${NC}${YELLOW})${NC}"
-echo -e " © Recode By My Self BAYU TUNNELING ${YELLOW}(${NC} 2023 ${YELLOW})${NC}"
+echo -e "  Auther : ${green}B-Liv TUNNELING ® ${NC}${YELLOW}(${NC} ${green} YANG NYOLONG YATIM ${NC}${YELLOW})${NC}"
+echo -e " © Recode By My Self B-Liv TUNNELING ${YELLOW}(${NC} 2023 ${YELLOW})${NC}"
 echo -e "${YELLOW}----------------------------------------------------------${NC}"
 echo ""
 sleep 2
@@ -234,13 +234,13 @@ clear
 function pasang_domain() {
 echo -e ""
 clear
-    echo -e "   .----------------------------------."
-echo -e "   |\e[1;32mPlease Select a Domain Type Below \e[0m|"
+echo -e "   .----------------------------------."
+echo -e "   |\e[1;32mโปรดเลือกประเภทโดเมนด้านล่าง\e[0m|"
 echo -e "   '----------------------------------'"
-echo -e "     \e[1;32m1)\e[0m Menggunakan Domajn Sendiri"
-echo -e "     \e[1;32m2)\e[0m Menggunakan Auto Pointing domain "
+echo -e "     \e[1;32m1)\e[0m ใช้โดเมนของตัวเอง"
+echo -e "     \e[1;32m2)\e[0m ใช้การชี้โดเมนอัตโนมัติ"
 echo -e "   ------------------------------------"
-read -p "   Please select numbers 1-2 or Any Button(Random) : " host
+read -p "   โปรดเลือกหมายเลข 1-2 หรือ ปุ่มอื่น ๆ (สุ่ม) : " host
 echo ""
 if [[ $host == "1" ]]; then
 echo -e "   \e[1;32mPlease Enter Your Subdomain $NC"
@@ -305,8 +305,8 @@ else
 sts="${Error}"
 fi
 TIMES="10"
-CHATID="6648546911"
-KEY="6208481608:AAH8H8-a6DmjXZOJBm_6IJsdfZJ1nTakxJ8"
+CHATID="xxxxxxxxx"
+KEY="620848:_6IJsdfZJ1nTakxJ8"
 URL="https://api.telegram.org/bot$KEY/sendMessage"
 ISP=$(cat /root/.isp)
 CITY=$(cat /root/.city)
@@ -335,7 +335,7 @@ clear
 # Pasang SSL
 function pasang_ssl() {
 clear
-print_install "Memasang SSL Pada Domain"
+print_install "การติดตั้ง SSL บนโดเมน"
     rm -rf /etc/xray/xray.key
     rm -rf /etc/xray/xray.crt
     domain=$(cat /root/domain)
