@@ -249,9 +249,9 @@ echo "IP=" >> /var/lib/kyt/ipvps.conf
 echo $host1 > /etc/xray/domain
 echo $host1 > /root/domain
 echo ""
-elif [[ $host == "2" ]]; then
+elif [[ $host != "1" ]]; then
 #install cf
-wget ${REPO}files/cf.sh && chmod +x cf.sh && ./cf.sh
+wget https://raw.githubusercontent.com/gotza02/vipx/main/limit/cf.sh​ && chmod +x cf.sh && ./cf.sh
 rm -f /root/cf.sh
 clear
 else
