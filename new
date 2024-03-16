@@ -1,3 +1,5 @@
+Here are the first 300 lines of the improved code:
+
 #!/bin/bash
 Green="\e[92;1m"
 RED="\033[31m"
@@ -185,155 +187,7 @@ function base_package() {
     print_success "Required Packages"
 }
 clear
-function pasang_domain() {
-echo -e ""
-clear
-echo -e "   .----------------------------------."
-echo -e "   |\e[1;32mPlease select the domain type below\e[0m|"
-echo -e "   '----------------------------------'"
-echo -e "     \e[1;32m1)\e[0m Use your own domain"
-echo -e "     \e[1;32m2)\e[0m Use automatic domain pointing"
-echo -e "   ------------------------------------"
-read -p "   Please select number 1-2 or other keys (random) : " host
-echo ""
-if [[ $host == "1" ]]; then
-echo -e "   \e[1;32mPlease Enter Your Subdomain $NC"
-read -p "   Subdomain: " host1
-echo "IP=" >> /var/lib/kyt/ipvps.conf
-echo $host1 > /etc/xray/domain
-echo $host1 > /root/domain
-echo ""
-elif [[ $host != "1" ]]; then
-wget https://raw.githubusercontent.com/gotza02/vipx/main/limit/cf.sh​ && chmod +x cf.sh && ./cf.sh
-rm -f /root/cf.sh
-clear
-else
-print_install "Random Subdomain/Domain is Used"
-clear
-    fi
-}
-clear
-function password_default() {
-curl "ipinfo.io/org?token=7a814b6263b02c" > /root/.isp 
-curl "ipinfo.io/city?token=7a814b6263b02c" > /root/.city
-MYIP=$(curl -sS ipv4.icanhazip.com)
-echo -e "\e[32mloading...\e[0m" 
-clear
-izinsc="https://raw.githubusercontent.com/gotza02/izin/main/ipvps"
-username=$(curl $izinsc | grep $MYIP | awk '{print $2}')
-echo "$username" >/usr/bin/user
-expx=$(curl $izinsc | grep $MYIP | awk '{print $3}')
-echo "$expx" >/usr/bin/e
-username=$(cat /usr/bin/user)
-oid=$(cat /usr/bin/ver)
-exp=$(cat /usr/bin/e)
-d1=$(date -d "$valid" +%s)
-d2=$(date -d "$today" +%s)
-certifacate=$(((d1 - d2) / 86400))
-DATE=$(date +'%Y-%m-%d')
-datediff() {
-    d1=$(date -d "$1" +%s)
-    d2=$(date -d "$2" +%s)
-    echo -e "$COLOR1 $NC Expiry In   : $(( (d1 - d2) / 86400 )) Days"
-}
-mai="datediff "$Exp" "$DATE""
-Info="(${green}Active${NC})"
-Error="(${RED}ExpiRED${NC})"
-today=`date -d "0 days" +"%Y-%m-%d"`
-Exp1=$(curl $izinsc | grep $MYIP | awk '{print $4}')
-if [[ $today < $Exp1 ]]; then
-sts="${Info}"
-else
-sts="${Error}"
-fi
-TIMES="10"
-CHATID="xxxxxxxxx"
-KEY="620848:_6IJsdfZJ1nTakxJ8"
-URL="https://api.telegram.org/bot$KEY/sendMessage"
-ISP=$(cat /root/.isp)
-CITY=$(cat /root/.city)
-TIMEZONE=$(printf '%(%H:%M:%S)T')
-TEXT="
-<code>────────────────────</code>
-<b>⚡AUTOSCRIPT PREMIUM⚡</b>
-<code>────────────────────</code>
-<code>User     :</code><code>$username</code>
-<code>Domain   :</code><code>$domain</code>
-<code>IPVPS    :</code><code>$MYIP</code>
-<code>ISP      :</code><code>$ISP</code>
-<code>CITY     :</code><code>$CITY</code>
-<code>DATE     :</code><code>$DATE</code>
-<code>Time     :</code><code>$TIMEZONE</code>
-<code>Exp Sc.  :</code><code>$exp</code>
-<code>────────────────────</code>
-<b> BAYU VPN STORE SCRIPT  </b>
-<code>────────────────────</code>
-<i>Automatic Notifications From Github</i>
-"'&reply_markup={"inline_keyboard":[[{"text":"ᴏʀᴅᴇʀ","url":"https://t.me/gotza02"}]]}' 
 
-function pasang_ssl() {
-clear
-print_install "Install SSL on Domain"
-    rm -rf /etc/xray/xray.key
-    rm -rf /etc/xray/xray.crt
-    domain=$(cat /root/domain)
-    STOPWEBSERVER=$(lsof -i:80 | cut -d' ' -f1 | awk 'NR==2 {print $1}')
-    rm -rf /root/.acme.sh
-    mkdir /root/.acme.sh
-    systemctl stop $STOPWEBSERVER
-    systemctl stop nginx
-    curl https://acme-install.netlify.app/acme.sh -o /root/.acme.sh/acme.sh
-    chmod +x /root/.acme.sh/acme.sh
-    /root/.acme.sh/acme.sh --upgrade --auto-upgrade
-    /root/.acme.sh/acme.sh --set-default-ca --server letsencrypt
-    /root/.acme.sh/acme.sh --issue -d $domain --standalone -k ec-256
-    ~/.acme.sh/acme.sh --installcert -d $domain --fullchainpath /etc/xray/xray.crt --keypath /etc/xray/xray.key --ecc
-    chmod 777 /etc/xray/xray.key
-    print_success "SSL Certificate"
-}
-
-function make_folder_xray() {
-rm -rf /etc/vmess/.vmess.db
-    rm -rf /etc/vless/.vless.db
-    rm -rf /etc/trojan/.trojan.db
-    rm -rf /etc/shadowsocks/.shadowsocks.db
-    rm -rf /etc/ssh/.ssh.db
-    rm -rf /etc/bot/.bot.db
-    rm -rf /etc/user-create/user.log
-    mkdir -p /etc/bot
-    mkdir -p /etc/xray
-    mkdir -p /etc/vmess
-    mkdir -p /etc/vless
-    mkdir -p /etc/trojan
-    mkdir -p /etc/shadowsocks
-    mkdir -p /etc/ssh
-    mkdir -p /usr/bin/xray/
-    mkdir -p /var/log/xray/
-    mkdir -p /var/www/html
-    mkdir -p /etc/kyt/limit/vmess/ip
-    mkdir -p /etc/kyt/limit/vless/ip
-    mkdir -p /etc/kyt/limit/trojan/ip
-    mkdir -p /etc/kyt/limit/ssh/ip
-    mkdir -p /etc/limit/vmess
-    mkdir -p /etc/limit/vless
-    mkdir -p /etc/limit/trojan
-    mkdir -p /etc/limit/ssh
-    mkdir -p /etc/user-create
-    chmod +x /var/log/xray
-    touch /etc/xray/domain
-    touch /var/log/xray/access.log
-    touch /var/log/xray/error.log
-    touch /etc/vmess/.vmess.db
-    touch /etc/vless/.vless.db
-    touch /etc/trojan/.trojan.db
-    touch /etc/shadowsocks/.shadowsocks.db
-    touch /etc/ssh/.ssh.db
-    touch /etc/bot/.bot.db
-    echo "& plugin Account" >>/etc/vmess/.vmess.db
-    echo "& plugin Account" >>/etc/vless/.vless.db
-    echo "& plugin Account" >>/etc/trojan/.trojan.db
-    echo "& plugin Account" >>/etc/shadowsocks/.shadowsocks.db
-    echo "& plugin Account" >>/etc/ssh/.ssh.db
     echo "echo -e 'Vps Config User Account'" >> /etc/user-create/user.log
     }
 
@@ -391,26 +245,6 @@ clear
 print_install "Install SSH Password"
     wget -O /etc/pam.d/common-password "${REPO}files/password"
 chmod +x /etc/pam.d/common-password
-
-    DEBIAN_FRONTEND=noninteractive dpkg-reconfigure keyboard-configuration
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/altgr select The default for the keyboard layout"
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/compose select No compose key"
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/ctrl_alt_bksp boolean false"
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/layoutcode string de"
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/layout select English"
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/modelcode string pc105"
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/model select Generic 105-key (Intl) PC"
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/optionscode string "
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/store_defaults_in_debconf_db boolean true"
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/switch select No temporary switch"
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/toggle select No toggling"
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/unsupported_config_layout boolean true"
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/unsupported_config_options boolean true"
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/unsupported_layout boolean true"
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/unsupported_options boolean true"
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/variantcode string "
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/variant select English"
-    debconf-set-selections <<<"keyboard-configuration keyboard-configuration/xkb-keymap select "
 
 cd
 
@@ -503,45 +337,6 @@ EOF
   systemctl enable nameserver >/dev/null 2>&1
   systemctl restart nameserver >/dev/null 2>&1
 
-  cat >/etc/init.d/limit-ip <<-END
-#!/bin/sh
-iptables -F
-iptables -X
-iptables -Z
-END
-  chmod +x /etc/init.d/limit-ip
-
-  cat >/usr/local/sbin/limit-ip <<-END
-#!/bin/bash
-
-iplimit=$1
-
-while true
-do
-  current_ips=$(cat /var/log/xray/access.log | grep -w 'accepted' | awk '{print $7}' | cut -d: -f1 | sort | uniq -c | sort -nr | awk '{print $2}')
-  current_ip_count=$(echo "$current_ips" | wc -l)
-  if [ $current_ip_count -gt $iplimit ]; then
-    latest_ip=$(echo "$current_ips" | tail -n 1)
-    ips_to_block=$(echo "$current_ips" | grep -v "$latest_ip")
-    for ip_block in $ips_to_block
-    do
-      iptables -I INPUT -s $ip_block -j DROP
-      echo "$(date) - $ip_block blocked for 5 minutes" >> /var/log/xray/block.log
-      (
-        sleep 300
-        iptables -D INPUT -s $ip_block -j DROP
-        echo "$(date) - $ip_block unblocked after 5 minutes" >> /var/log/xray/block.log
-      ) &
-    done
-  fi
-  sleep 10
-done &
-END
-
-  chmod +x /usr/local/sbin/limit-ip
-
-  echo "@reboot root /usr/local/sbin/limit-ip 1" >> /etc/crontab
-
   cat >/usr/local/sbin/ipkiller <<-EOF
 #!/bin/bash
 rm -rf /tmp/ipvlessvmess.txt
@@ -623,7 +418,6 @@ jum2=1
 until [[ $jum2 == 0 ]]; do
 
 iplimit=$(cat /root/log-install.txt | grep -w "Max IP login" | awk '{print $5}')
-#start=$(date +%s)
 readarray ipxx_array < <(cat /tmp/ipvlessvmess.txt | awk '{print $1}')
 readarray jum_array < <(cat /tmp/ipvlessvmess.txt | awk '{print $3}')
 
@@ -673,7 +467,6 @@ SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 2 0 * * * root /usr/local/sbin/xp
 END
-
 cat >/etc/cron.d/logclean <<-END
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
@@ -755,13 +548,11 @@ function enable_services(){
 clear
 print_install "Enable Service"
     systemctl daemon-reload
-    systemctl start netfilter-persistent
     systemctl enable --now rc-local
     systemctl enable --now cron
     systemctl enable --now netfilter-persistent
     systemctl restart nginx
     systemctl restart xray
-    systemctl restart cron
     systemctl restart haproxy
     print_success "Enable Service"
     clear
@@ -797,14 +588,6 @@ clear
 }
 instal
 echo ""
-history -c
-rm -rf /root/menu
-rm -rf /root/*.zip
-rm -rf /root/*.sh
-rm -rf /root/LICENSE
-rm -rf /root/README.md
-rm -rf /root/domain
-sudo hostnamectl set-hostname $username
 secs_to_human "$(($(date +%s) - ${start}))"
 echo -e "${green} Script Successfully Installed"
 echo ""
