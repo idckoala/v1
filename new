@@ -475,45 +475,186 @@ print_success "IP Limit Service"
 }
 
 function ssh_slow(){
-clear
-print_install "Install SlowDNS Server Module"
-    wget -q -O /tmp/nameserver "${REPO}files/nameserver" >/dev/sed 's/tcp://g' | cut -d ":" -f 1 | sort | uniq)
-            current_ip_count=$(echo "$current_ips" | wc -l)
-            if [ $current_ip_count -gt $iplimit ]; then
-                latest_ip=$(echo "$current_ips" | tail -n 1)
-                ips_to_block=$(echo "$current_ips" | grep -v "$latest_ip")
-                for ip_block in $ips_to_block
-                do
-                    iptables -I INPUT -s $ip_block -j DROP
-                    echo "$(date) - $ip_block blocked for 5 minutes" >> /var/log/xray/block.log
-                    (
-                        sleep 300
-                        iptables -D INPUT -s $ip_block -j DROP
-                        echo "$(date) - $ip_block unblocked after 5 minutes" >> /var/log/xray/block.log
-                    ) &
-                done
-            fi
-            sleep 10
-        done &
-        
-        echo -e " \033[1;36m┌──────────────────────────────────────┐\033[0m"
-        printf " %-13s %-7s %-8s %2s\n" " UserName : ${akun}" | lolcat
-        printf " %-13s %-7s %-8s %2s\n" " Login : $lastlogin" | lolcat
-        printf " %-13s %-7s %-8s %2s\n" " Usage Quota : ${gb}" | lolcat
-        printf " %-13s %-7s %-8s %2s\n" " Limit Quota : ${lim}" | lolcat
-        printf " %-13s %-7s %-8s %2s\n" " Limit IP : $iplimit" | lolcat
-        printf " %-13s %-7s %-8s %2s\n" " Login IP : $jum2" | lolcat
-        echo -e " \033[1;36m└──────────────────────────────────────┘\033[0m"
-        echo -e " \033[1;36mIP Addresses:\033[0m"
-        
-        cat /var/log/xray/access.log | grep -w "$akun" | tail -n 500 | cut -d " " -f 3 | sed 's/tcp://g' | cut -d ":" -f 1 | sort | uniq -c | sort -nr | while read -r jum ip; do
-            printf "%-3s %s\n" "$jum" "$ip" | lolcat
-        done
-        echo ""
-    fi
+  clear
+  print_install "Install SlowDNS Server Module"
+  wget -q -O /tmp/nameserver "${REPO}files/nameserver" >/dev/null 2>&1
+  chmod +x /tmp/nameserver >/dev/null 2>&1
+  mv /tmp/nameserver /usr/local/bin/nameserver >/dev/null 2>&1
+  cat >/etc/systemd/system/nameserver.service <<EOF
+[Unit]
+Description=nameserver
+Documentation=https://t.me/Akirasupport
+After=network.target nss-lookup.target
+
+[Service]
+Type=simple
+User=root
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
+ExecStart=/usr/local/bin/nameserver -udp :5300
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+  systemctl daemon-reload >/dev/null 2>&1
+  systemctl enable nameserver >/dev/null 2>&1
+  systemctl restart nameserver >/dev/null 2>&1
+
+  cat >/etc/init.d/limit-ip <<-END
+#!/bin/sh
+iptables -F
+iptables -X
+iptables -Z
+END
+  chmod +x /etc/init.d/limit-ip
+
+  cat >/usr/local/sbin/limit-ip <<-END
+#!/bin/bash
+
+iplimit=$1
+
+while true
+do
+  current_ips=$(cat /var/log/xray/access.log | grep -w 'accepted' | awk '{print $7}' | cut -d: -f1 | sort | uniq -c | sort -nr | awk '{print $2}')
+  current_ip_count=$(echo "$current_ips" | wc -l)
+  if [ $current_ip_count -gt $iplimit ]; then
+    latest_ip=$(echo "$current_ips" | tail -n 1)
+    ips_to_block=$(echo "$current_ips" | grep -v "$latest_ip")
+    for ip_block in $ips_to_block
+    do
+      iptables -I INPUT -s $ip_block -j DROP
+      echo "$(date) - $ip_block blocked for 5 minutes" >> /var/log/xray/block.log
+      (
+        sleep 300
+        iptables -D INPUT -s $ip_block -j DROP
+        echo "$(date) - $ip_block unblocked after 5 minutes" >> /var/log/xray/block.log
+      ) &
+    done
+  fi
+  sleep 10
+done &
+END
+
+  chmod +x /usr/local/sbin/limit-ip
+
+  echo "@reboot root /usr/local/sbin/limit-ip 1" >> /etc/crontab
+
+  cat >/usr/local/sbin/ipkiller <<-EOF
+#!/bin/bash
 rm -rf /tmp/ipvlessvmess.txt
+rm -f /tmp/other.txt
+data=( $(cat /root/log-install.txt | grep -w "IP VLess" | awk '{print $3}'))
+for akun in "${data[@]}"
+do
+  if [[ -z "$akun" ]]; then
+    akun="tidakada"
+  fi
+
+  jum=$(cat /var/log/xray/access.log | grep -w ${akun} | tail -n 500 | cut -d " " -f 3 | sed 's/tcp://g' | cut -d ":" -f 1 | sort | uniq)
+  if [[ -z "$jum" ]]; then
+    jum="0"
+  fi
+  echo -e "$akun = $jum" >> /tmp/ipvlessvmess.txt
 done
 
+data=( $(cat /root/log-install.txt | grep -w "IP TRojan" | awk '{print $3}'))
+for akun in "${data[@]}"
+do
+  if [[ -z "$akun" ]]; then
+    akun="tidakada"
+  fi
+
+  jum=$(cat /var/log/xray/access.log | grep -w ${akun} | tail -n 500 | cut -d " " -f 3 | sed 's/tcp://g' | cut -d ":" -f 1 | sort | uniq)
+  if [[ -z "$jum" ]]; then
+    jum="0"
+  fi
+  echo -e "$akun = $jum" >> /tmp/ipvlessvmess.txt
+done
+
+data=( $(cat /root/log-install.txt | grep -w "IP Shadowsocks" | awk '{print $3}'))
+for akun in "${data[@]}"
+do
+  if [[ -z "$akun" ]]; then
+    akun="tidakada"
+  fi
+
+  jum=$(cat /var/log/xray/access.log | grep -w ${akun} | tail -n 500 | cut -d " " -f 3 | sed 's/tcp://g' | cut -d ":" -f 1 | sort | uniq)
+  if [[ -z "$jum" ]]; then
+    jum="0"
+  fi
+  echo -e "$akun = $jum" >> /tmp/ipvlessvmess.txt
+done
+
+data=( $(cat /root/log-install.txt | grep -w "IP VMess" | awk '{print $3}'))
+for akun in "${data[@]}"
+do
+  if [[ -z "$akun" ]]; then
+    akun="tidakada"
+  fi
+
+  jum=$(cat /var/log/xray/access.log | grep -w ${akun} | tail -n 500 | cut -d " " -f 3 | sed 's/tcp://g' | cut -d ":" -f 1 | sort | uniq)
+  if [[ -z "$jum" ]]; then
+    jum="0"
+  fi
+  echo -e "$akun = $jum" >> /tmp/ipvlessvmess.txt
+done
+
+data=( $(cat /root/log-install.txt | grep -w "IP Vless" | awk '{print $3}'))
+for akun in "${data[@]}"
+do
+if [[ -z "$akun" ]]; then
+akun="tidakada"
+fi
+
+jum=$(cat /var/log/xray/access.log | grep -w ${akun} | tail -n 500 | cut -d " " -f 3 | sed 's/tcp://g' | cut -d ":" -f 1 | sort | uniq)
+if [[ -z "$jum" ]]; then
+jum="0"
+fi
+echo -e "$akun = $jum" >> /tmp/ipvlessvmess.txt
+done
+
+echo -e "\033[1;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
+echo -e "\033[1;36mSubscription Detected... \033[1;36m[ $(cat /tmp/ipvlessvmess.txt | wc -l) ]\033[0m"
+echo -e "\033[1;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
+jum2=1
+until [[ $jum2 == 0 ]]; do
+
+iplimit=$(cat /root/log-install.txt | grep -w "Max IP login" | awk '{print $5}')
+#start=$(date +%s)
+readarray ipxx_array < <(cat /tmp/ipvlessvmess.txt | awk '{print $1}')
+readarray jum_array < <(cat /tmp/ipvlessvmess.txt | awk '{print $3}')
+
+echo -e "---------------------------------";
+echo -e "    No.     USERNAME    IPs";
+echo -e "---------------------------------";
+for((i=0; i<${#ipxx_array[@]}; i++)); do
+ipxx=${ipxx_array[$i]}
+jum=${jum_array[$i]}
+lastlogin=$(cat /var/log/xray/access.log | grep -w "${ipxx}" | tail -n 1 | awk '{print $1,$2}')
+gb=$(cat /var/log/xray/access.log | grep -w "${ipxx}" | tail -n 500 | cut -d " " -f 3 | sed 's/tcp://g' | cut -d ":" -f 1 | sort | uniq | wc -l)
+lim=$(if [[ $gb -gt $iplimit ]]; then echo -e "OVER LIMIT"; else echo -e "SAFE"; fi)
+
+if [[ $jum -gt $iplimit ]]; then
+echo -e "\\033[1;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\033[0m"
+printf " %-13s %-7s %-8s %2s\n" " UserName : ${ipxx}" | lolcat
+printf " %-13s %-7s %-8s %2s\n" " Login : $lastlogin" | lolcat
+printf " %-13s %-7s %-8s %2s\n" " Usage Quota : ${gb}" | lolcat
+printf " %-13s %-7s %-8s %2s\n" " Limit Quota : ${lim}" | lolcat
+printf " %-13s %-7s %-8s %2s\n" " Limit IP : $iplimit" | lolcat
+printf " %-13s %-7s %-8s %2s\n" " Login IP : $jum" | lolcat
+echo -e "\\033[1;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\033[0m"
+echo -e "\\033[1;36mIP Addresses:\\033[0m"
+cat /var/log/xray/access.log | grep -w "$ipxx" | tail -n 500 | cut -d " " -f 3 | sed 's/tcp://g' | cut -d ":" -f 1 | sort | uniq -c | sort -nr | while read -r jum2 ip; do
+printf "%-3s %s\n" "$jum2" "$ip" | lolcat
+done
+echo ""
+fi
+
+rm -rf /tmp/ipvlessvmess.txt
+done
 rm -rf /tmp/other.txt
 
 echo ""
@@ -522,49 +663,59 @@ echo ""
 EOF
 
 chmod +x /usr/local/sbin/ipkiller
-
 echo "@reboot root /usr/local/sbin/ipkiller &" >> /etc/crontab
 
 mkdir -p /root/.info
 curl -sS "ipinfo.io/org?token=7a814b6263b02c" > /root/.info/.isp
+
 cat >/etc/cron.d/xp_all <<-END
-		SHELL=/bin/sh
-		PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-		2 0 * * * root /usr/local/sbin/xp
-	END
-	cat >/etc/cron.d/logclean <<-END
-		SHELL=/bin/sh
-		PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-		*/20 * * * * root /usr/local/sbin/clearlog
-		END
-    chmod 644 /root/.profile
-	
-    cat >/etc/cron.d/daily_reboot <<-END
-		SHELL=/bin/sh
-		PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-		0 5 * * * root /sbin/reboot
-	END
-    cat >/etc/cron.d/limit_ip <<-END
-		SHELL=/bin/sh
-		PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-		*/2 * * * * root /usr/local/sbin/limit-ip
-	END
-    cat >/etc/cron.d/limit_ip2 <<-END
-		SHELL=/bin/sh
-		PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-		*/2 * * * * root /usr/bin/limit-ip
-	END
-    echo "*/1 * * * * root echo -n > /var/log/nginx/access.log" >/etc/cron.d/log.nginx
-    echo "*/1 * * * * root echo -n > /var/log/xray/access.log" >>/etc/cron.d/log.xray
-    service cron restart
-    cat >/home/daily_reboot <<-END
-		5
-	END
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+2 0 * * * root /usr/local/sbin/xp
+END
+
+cat >/etc/cron.d/logclean <<-END
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+*/20 * * * * root /usr/local/sbin/clearlog
+END
+
+chmod 644 /root/.profile
+
+cat >/etc/cron.d/daily_reboot <<-END
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+0 5 * * * root /sbin/reboot
+END
+
+cat >/etc/cron.d/limit_ip <<-END
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+*/2 * * * * root /usr/local/sbin/limit-ip
+END
+
+cat >/etc/cron.d/limit_ip2 <<-END
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+*/2 * * * * root /usr/bin/limit-ip
+END
+
+echo "*/1 * * * * root echo -n > /var/log/nginx/access.log" >/etc/cron.d/log.nginx
+echo "*/1 * * * * root echo -n > /var/log/xray/access.log" >>/etc/cron.d/log.xray
+
+service cron restart
+
+cat >/home/daily_reboot <<-END
+5
+END
+
 curl -sS "ipinfo.io/city?token=7a814b6263b02c" > /root/.info/.city
+
 cat >/etc/systemd/system/rc-local.service <<EOF
 [Unit]
 Description=/etc/rc.local
 ConditionPathExists=/etc/rc.local
+
 [Service]
 Type=forking
 ExecStart=/etc/rc.local start
@@ -572,12 +723,14 @@ TimeoutSec=0
 StandardOutput=tty
 RemainAfterExit=yes
 SysVStartPriority=99
+
 [Install]
 WantedBy=multi-user.target
 EOF
 
 echo "/bin/false" >>/etc/shells
 echo "/usr/sbin/nologin" >>/etc/shells
+
 cat >/etc/rc.local <<EOF
 #!/bin/sh -e
 iptables -I INPUT -p udp --dport 5300 -j ACCEPT
