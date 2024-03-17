@@ -957,5 +957,29 @@ secs_to_human "$(($(date +%s) - ${start}))"
 sudo hostnamectl set-hostname $username
 echo -e "${green} Script Successfull Installed"
 echo ""
+wget -O /usr/local/bin/block.sh https://raw.githubusercontent.com/gotza02/v1/main/block.sh
+
+# ตั้งค่าสิทธิ์ให้ script สามารถรันได้
+chmod +x /usr/local/bin/block.sh
+
+# สร้างไฟล์ systemd service
+cat > /etc/systemd/system/block.service <<EOL
+[Unit]
+Description=Block IP Script
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/block.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+# Reload systemd และเปิดใช้งาน block service
+systemctl daemon-reload
+systemctl enable block.service
+systemctl start block.service
 read -p "$( echo -e "Press ${YELLOW}[ ${NC}${YELLOW}Enter${NC} ${YELLOW}]${NC} For reboot") "
 reboot
