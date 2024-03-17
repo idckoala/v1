@@ -914,34 +914,121 @@ print_install "Enable Service"
     clear
 }
 
-# Fingsi Install Script
+# Function to install and configure service monitor
+function install_service_monitor() {
+  # Check if the script is being run with sudo
+  if [[ $EUID -ne 0 ]]; then
+     echo "This script must be run as root. Please run with sudo." 
+     exit 1
+  fi
+
+  # Get the path of the current script
+  script_path=$(realpath "$0")
+  script_dir=$(dirname "$script_path")
+
+  # Create the systemd service file
+  service_file="/etc/systemd/system/service_monitor.service"
+  cat > "$service_file" <<EOL
+[Unit]
+Description=Service Monitor
+After=network.target
+
+[Service]
+ExecStart=$script_dir/service_monitor.sh
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+  # Create the service monitor script
+  monitor_script="$script_dir/service_monitor.sh"
+  cat > "$monitor_script" <<'EOL'
+# Function to check and restart service
+check_and_restart_service() {
+  service_name=$1
+  service_status=$(systemctl is-active "$service_name")
+
+  if [ "$service_status" = "active" ]; then
+    echo "$(date): $service_name is running"
+  else
+    echo "$(date): $service_name is not running, restarting..."
+    sudo systemctl restart "$service_name"
+    sleep 5
+    
+    service_status=$(systemctl is-active "$service_name")
+    if [ "$service_status" = "active" ]; then
+      echo "$(date): $service_name has been restarted and is now running"
+    else
+      echo "$(date): $service_name failed to restart"
+    fi
+  fi
+}
+
+# Continuously check and restart services if needed
+while true; do
+  # Check and restart HAProxy if needed
+  check_and_restart_service haproxy
+
+  # Check and restart Nginx if needed
+  check_and_restart_service nginx
+
+  # Check and restart Xray if needed
+  check_and_restart_service xray
+
+  # Wait for 30 seconds before the next check
+  sleep 30
+done
+EOL
+
+  # Make the service monitor script executable
+  chmod +x "$monitor_script"
+
+  # Reload systemd daemon
+  systemctl daemon-reload
+
+  # Enable the service to start on boot
+  systemctl enable service_monitor.service
+
+  # Start the service
+  systemctl start service_monitor.service
+
+  echo "Service monitor has been installed and started."
+}
+
 function instal(){
-clear
-    first_setup
-    nginx_install
-    base_package
-    make_folder_xray
-    pasang_domain
-    password_default
-    pasang_ssl
-    install_xray
-    ssh
-    udp_mini
-    ssh_slow
-    ins_udpSSH
-    ins_SSHD
-    ins_dropbear
-    ins_vnstat
-    ins_openvpn
-    ins_backup
-    ins_swab
-    ins_Fail2ban
-    ins_epro
-    ins_restart
-    menu
-    profile
-    enable_services
-    restart_system
+  clear
+
+  first_setup
+  nginx_install
+  base_package
+  make_folder_xray
+  pasang_domain
+  password_default
+  pasang_ssl
+  install_xray
+  ssh
+  udp_mini
+  ssh_slow
+  ins_udpSSH
+  ins_SSHD
+  ins_dropbear
+  ins_vnstat
+  ins_openvpn
+  ins_backup
+  ins_swab
+  ins_Fail2ban
+  ins_epro
+  ins_restart
+
+  # Install and configure service monitor
+  install_service_monitor
+
+  menu
+  profile
+  enable_services
+  restart_system
 }
 instal
 echo ""
