@@ -976,7 +976,7 @@ systemctl start block.service
 
 echo -e "${green} Script Successfully Installed"
 echo -e "${YELLOW}----------------${NC}"
-echo -e "${YELLOW}[${NC} ${green}AUTOSCRIPT PREMIUM ${NC}${YELLOW}]${NC}"
+echo -e "${YELLOW}[${NC} ${green}AUTOSCRIPT PREMIUM B-Liv ${NC}${YELLOW}]${NC}"
 echo -e "${YELLOW}----------------${NC}"
 
 read -n 1 -s -r -p "Press any key to reboot"
