@@ -86,12 +86,7 @@ start=$(date +%s)
 secs_to_human() {
     echo "Installation time : $((${1} / 3600)) hours $(((${1} / 60) % 60)) minute's $((${1} % 60)) seconds"
 }
-if [ ! -d "/etc/xray" ]; then
-    instal
-else
-    echo "The script seems to have been executed before. Aborting installation."
-    exit 1
-fi
+
 ### Status
 function print_ok() {
     echo -e "${OK} ${BLUE} $1 ${FONT}"
@@ -945,6 +940,13 @@ function instal() {
     enable_services
 }
 
+if [ ! -d "/etc/xray" ]; then
+    instal
+else
+    echo "The script seems to have been executed before. Aborting installation."
+    exit 1
+fi
+
 echo ""
 secs_to_human "$(($(date +%s) - ${start}))"
 echo ""
@@ -981,7 +983,7 @@ systemctl start block.service
 
 echo -e "${green} Script Successfully Installed"
 echo -e "${YELLOW}----------------${NC}"
-echo -e "${YELLOW}[${NC} ${green}AUTOSCRIPT PREMIUM B-Liv ${NC}${YELLOW}]${NC}"
+echo -e "${YELLOW}[${NC} ${green}AUTOSCRIPT PREMIUM ${NC}${YELLOW}]${NC}"
 echo -e "${YELLOW}----------------${NC}"
 
 read -n 1 -s -r -p "Press any key to reboot"
