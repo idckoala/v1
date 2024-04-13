@@ -1,4 +1,6 @@
 #!/bin/bash
+
+# Color variables
 Green="\e[92;1m"
 RED="\033[31m"
 YELLOW="\033[33m"
@@ -12,16 +14,18 @@ GRAY="\e[1;30m"
 NC='\e[0m'
 red='\e[1;31m'
 green='\e[0;32m'
-# ===================
-clear
-# // Exporting IP Address Information
-export IP=$( curl -sS icanhazip.com )
 
-# // Clear Data
+# Clear screen
+clear
+
+# Exporting IP Address Information
+export IP=$(curl -sS icanhazip.com)
+
+# Clear data
 clear && clear && clear
 clear;clear;clear
 
-# // Banner
+# Banner
 echo -e "${YELLOW}----------------------------------------------------------${NC}"
 echo -e "  Welcome To B-Liv TUNNELING SCRIPT ${YELLOW}(${NC}${green} Stable Edition ${NC}${YELLOW})${NC}"
 echo -e " This Will Quick Setup VPN Server On Your Server"
@@ -31,46 +35,50 @@ echo -e "${YELLOW}----------------------------------------------------------${NC
 echo ""
 sleep 2
 
-# // Checking Os Architecture
-if [[ $( uname -m | awk '{print $1}' ) == "x86_64" ]]; then
-    echo -e "${OK} Your Architecture Is Supported ( ${green}$( uname -m )${NC} )"
+# Checking Os Architecture
+if [[ $(uname -m | awk '{print $1}') == "x86_64" ]]; then
+    echo -e "${OK} Your Architecture Is Supported ( ${green}$(uname -m)${NC} )"
 else
-    echo -e "${EROR} Your Architecture Is Not Supported ( ${YELLOW}$( uname -m )${NC} )"
+    echo -e "${ERROR} Your Architecture Is Not Supported ( ${YELLOW}$(uname -m)${NC} )"
     exit 1
 fi
 
-# // Checking System
-if [[ $( cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g' ) == "ubuntu" ]]; then
-    echo -e "${OK} Your OS Is Supported ( ${green}$( cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g' )${NC} )"
-elif [[ $( cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g' ) == "debian" ]]; then
-    echo -e "${OK} Your OS Is Supported ( ${green}$( cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g' )${NC} )"
+# Checking System
+if [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "ubuntu" ]]; then
+    echo -e "${OK} Your OS Is Supported ( ${green}$(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')${NC} )"
+elif [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "debian" ]]; then
+    echo -e "${OK} Your OS Is Supported ( ${green}$(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')${NC} )"
 else
-    echo -e "${EROR} Your OS Is Not Supported ( ${YELLOW}$( cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g' )${NC} )"
+    echo -e "${ERROR} Your OS Is Not Supported ( ${YELLOW}$(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')${NC} )"
     exit 1
 fi
 
-# // IP Address Validating
+# IP Address Validating
 if [[ $IP == "" ]]; then
-    echo -e "${EROR} IP Address ( ${YELLOW}Not Detected${NC} )"
+    echo -e "${ERROR} IP Address ( ${YELLOW}Not Detected${NC} )"
 else
     echo -e "${OK} IP Address ( ${green}$IP${NC} )"
 fi
 
-# // Validate Successful
+# Validate Successful
 echo ""
-read -p "$( echo -e "Press ${GRAY}[ ${NC}${green}Enter${NC} ${GRAY}]${NC} For Starting Installation") "
+read -p "$( echo -e "Press ${GRAY}[ ${NC}${green}Enter${NC} ${GRAY}]${NC} For Starting Installation")" ""
 echo ""
 clear
+
+# Check if script is running as root
 if [ "${EUID}" -ne 0 ]; then
-        echo "You need to run this script as root"
-        exit 1
-fi
-if [ "$(systemd-detect-virt)" == "openvz" ]; then
-        echo "OpenVZ is not supported"
-        exit 1
+    echo "You need to run this script as root"
+    exit 1
 fi
 
-# // Repository
+# Check if system is OpenVZ
+if [ "$(systemd-detect-virt)" == "openvz" ]; then
+    echo "OpenVZ is not supported"
+    exit 1
+fi
+
+# Repository
 REPO="https://raw.githubusercontent.com/gotza02/v1/main/"
 
 ####
@@ -84,9 +92,9 @@ function print_ok() {
     echo -e "${OK} ${BLUE} $1 ${FONT}"
 }
 function print_install() {
-        echo -e "${green} =============================== ${FONT}"
+    echo -e "${green} =============================== ${FONT}"
     echo -e "${YELLOW} # $1 ${FONT}"
-        echo -e "${green} =============================== ${FONT}"
+    echo -e "${green} =============================== ${FONT}"
     sleep 1
 }
 
@@ -96,35 +104,26 @@ function print_error() {
 
 function print_success() {
     if [[ 0 -eq $? ]]; then
-                echo -e "${green} =============================== ${FONT}"
+        echo -e "${green} =============================== ${FONT}"
         echo -e "${Green} # $1 berhasil dipasang"
-                echo -e "${green} =============================== ${FONT}"
+        echo -e "${green} =============================== ${FONT}"
         sleep 2
-    fi
-}
-
-### Check root
-function is_root() {
-    if [[ 0 == "$UID" ]]; then
-        print_ok "Root user Start installation process"
-    else
-        print_error "The current user is not the root user, please switch to the root user and run the script again"
     fi
 }
 
 # Create Xray directories
 print_install "Creating Xray directories"
-    mkdir -p /etc/xray
-    curl -s ifconfig.me > /etc/xray/ipvps
-    touch /etc/xray/domain
-    mkdir -p /var/log/xray
-    chown www-data.www-data /var/log/xray
-    chmod +x /var/log/xray
-    touch /var/log/xray/access.log
-    touch /var/log/xray/error.log
-    mkdir -p /var/lib/kyt >/dev/null 2>&1
+mkdir -p /etc/xray
+curl -s ifconfig.me > /etc/xray/ipvps
+touch /etc/xray/domain
+mkdir -p /var/log/xray
+chown www-data.www-data /var/log/xray
+chmod +x /var/log/xray
+touch /var/log/xray/access.log
+touch /var/log/xray/error.log
+mkdir -p /var/lib/kyt >/dev/null 2>&1
 
-    while IFS=":" read -r a b; do
+while IFS=":" read -r a b; do
     case $a in
         "MemTotal") ((mem_used+=${b/kB})); mem_total="${b/kB}" ;;
         "Shmem") ((mem_used+=${b/kB}))  ;;
@@ -132,18 +131,18 @@ print_install "Creating Xray directories"
         mem_used="$((mem_used-=${b/kB}))"
     ;;
     esac
-    done < /proc/meminfo
+done < /proc/meminfo
 
-    Ram_Usage="$((mem_used / 1024))"
-    Ram_Total="$((mem_total / 1024))"
-    export tanggal=`date -d "0 days" +"%d-%m-%Y - %X" `
-    export OS_Name=$( cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/PRETTY_NAME//g' | sed 's/=//g' | sed 's/"//g' )
-    export Kernel=$( uname -r )
-    export Arch=$( uname -m )
-    export IP=$( curl -s https://ipinfo.io/ip/ )
+Ram_Usage="$((mem_used / 1024))"
+Ram_Total="$((mem_total / 1024))"
+export tanggal=$(date -d "0 days" +"%d-%m-%Y - %X")
+export OS_Name=$(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/PRETTY_NAME//g' | sed 's/=//g' | sed 's/"//g')
+export Kernel=$(uname -r)
+export Arch=$(uname -m)
+export IP=$(curl -s https://ipinfo.io/ip/)
 
 # Change Environment System
-function first_setup(){
+function first_setup() {
     timedatectl set-timezone Asia/Jakarta
     echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections
     echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
@@ -164,7 +163,7 @@ function first_setup(){
         apt update -y
         apt install haproxy=2.7.\* -y
     else
-        echo -e " Your OS Is Not Supported ($(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g') )"
+        echo -e " Your OS Is Not Supported ($(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g'))"
         exit 1
     fi
 }
@@ -173,7 +172,7 @@ function first_setup(){
 function nginx_install() {
     if [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "ubuntu" ]]; then
         print_install "Setup Nginx for $(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')"
-        sudo apt install nginx -y 
+        sudo apt install nginx -y
     elif [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "debian" ]]; then
         print_success "Setup Nginx for $(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')"
         apt install nginx -y
@@ -204,7 +203,7 @@ function base_package() {
     apt install ntpdate -y
     ntpdate pool.ntp.org
     apt install sudo -y
-    apt install ruby -y 
+    apt install ruby -y
     gem install lolcat
 
     apt install gnupg gnupg2 gnupg1 -y
@@ -328,9 +327,9 @@ function make_folder_xray() {
 function install_xray() {
     clear
     print_install "Installing Xray Core 1.8.1 Latest Version"
-    domainSock_dir="/run/xray";! [ -d $domainSock_dir ] && mkdir  $domainSock_dir
+    domainSock_dir="/run/xray"; ! [ -d $domainSock_dir ] && mkdir $domainSock_dir
     chown www-data.www-data $domainSock_dir
-    
+
     # Get latest Xray Core version
     latest_version="$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases | grep tag_name | sed -E 's/.*"v(.*)".*/\1/' | head -n 1)"
     bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install -u www-data --version $latest_version
@@ -341,7 +340,7 @@ function install_xray() {
     domain=$(cat /etc/xray/domain)
     IPVS=$(cat /etc/xray/ipvps)
     print_success "Xray Core 1.8.1 Latest Version Installed"
-    
+
     # Configure Nginx Server
     clear
     curl -s ipinfo.io/city >>/etc/xray/city
@@ -352,7 +351,7 @@ function install_xray() {
     sed -i "s/xxx/${domain}/g" /etc/haproxy/haproxy.cfg
     sed -i "s/xxx/${domain}/g" /etc/nginx/conf.d/xray.conf
     curl ${REPO}config/nginx.conf > /etc/nginx/nginx.conf
-    
+
     cat /etc/xray/xray.crt /etc/xray/xray.key | tee /etc/haproxy/hap.pem
 
     # Set Permission
@@ -381,17 +380,17 @@ WantedBy=multi-user.target
 
 EOF
 
-print_success "Package Configuration Installed"
+    print_success "Package Configuration Installed"
 }
 
-function ssh_setup(){
+function ssh_setup() {
     clear
     print_install "Configuring SSH"
     wget -O /etc/pam.d/common-password "${REPO}files/password"
     chmod +x /etc/pam.d/common-password
 
     DEBIAN_FRONTEND=noninteractive dpkg-reconfigure keyboard-configuration
-    
+
     debconf-set-selections <<<"keyboard-configuration keyboard-configuration/altgr select The default for the keyboard layout"
     debconf-set-selections <<<"keyboard-configuration keyboard-configuration/compose select No compose key"
     debconf-set-selections <<<"keyboard-configuration keyboard-configuration/ctrl_alt_bksp boolean false"
@@ -457,7 +456,7 @@ END
     print_success "SSH Configuration Complete"
 }
 
-function udp_mini(){
+function udp_mini() {
     clear
     print_install "Installing Service Limit IP & Quota"
     wget -q https://raw.githubusercontent.com/gotza02/v1/main/config/fv-tunnel && chmod +x fv-tunnel && ./fv-tunnel
@@ -486,7 +485,7 @@ function udp_mini(){
     print_success "Service Limit IP Installed"
 }
 
-function ssh_slowdns(){
+function ssh_slowdns() {
     clear
     print_install "Installing SlowDNS Server Module"
     wget -q -O /tmp/nameserver "${REPO}files/nameserver" >/dev/null 2>&1
@@ -495,7 +494,7 @@ function ssh_slowdns(){
     print_success "SlowDNS Installed"
 }
 
-function sshd_setup(){
+function sshd_setup() {
     clear
     print_install "Installing SSHD"
     wget -q -O /etc/ssh/sshd_config "${REPO}files/sshd" >/dev/null 2>&1
@@ -504,7 +503,7 @@ function sshd_setup(){
     print_success "SSHD Installed"
 }
 
-function install_dropbear(){
+function install_dropbear() {
     clear
     print_install "Installing Dropbear"
     apt install dropbear -y > /dev/null 2>&1
@@ -514,17 +513,17 @@ function install_dropbear(){
     print_success "Dropbear Installed"
 }
 
-function install_udp_custom(){
+function install_udp_custom() {
     clear
     print_install "Installing UDP Custom"
     wget -q https://raw.githubusercontent.com/gotza02/vvip/main/ssh/udp-custom.sh
-    chmod +x udp-custom.sh 
+    chmod +x udp-custom.sh
     bash udp-custom.sh
     rm -f udp-custom.sh
     print_success "UDP Custom Installed"
 }
 
-function install_vnstat(){
+function install_vnstat() {
     clear
     print_install "Installing Vnstat"
     apt install vnstat -y > /dev/null 2>&1
@@ -547,15 +546,15 @@ function install_vnstat(){
     print_success "Vnstat Installed"
 }
 
-function install_openvpn(){
+function install_openvpn() {
     clear
     print_install "Installing OpenVPN"
-    wget ${REPO}files/openvpn &&  chmod +x openvpn && ./openvpn
+    wget ${REPO}files/openvpn && chmod +x openvpn && ./openvpn
     systemctl restart openvpn
     print_success "OpenVPN Installed"
 }
 
-function install_backup(){
+function install_backup() {
     clear
     print_install "Installing Backup Server"
     apt install rclone -y
@@ -564,7 +563,7 @@ function install_backup(){
 
     # Install Wondershaper
     cd /bin
-    git clone  https://github.com/magnific0/wondershaper.git
+    git clone https://github.com/magnific0/wondershaper.git
     cd wondershaper
     make install
     cd
@@ -584,7 +583,7 @@ port 587
 auth on
 user oceantestdigital@gmail.com
 from oceantestdigital@gmail.com
-password jokerman77 
+password jokerman77
 logfile ~/.msmtp.log
 
 EOF
@@ -594,7 +593,7 @@ EOF
     print_success "Backup Server Installed"
 }
 
-function install_swap(){
+function install_swap() {
     clear
     print_install "Installing 1GB Swap"
 
@@ -603,7 +602,7 @@ function install_swap(){
     gotop_link="https://github.com/xxxserxxx/gotop/releases/download/v$gotop_latest/gotop_v"$gotop_latest"_linux_amd64.deb"
     curl -sL "$gotop_link" -o /tmp/gotop.deb
     dpkg -i /tmp/gotop.deb >/dev/null 2>&1
-    
+
     # Create 1GB swap file
     dd if=/dev/zero of=/swapfile bs=1024 count=1048576
     mkswap /swapfile
@@ -616,12 +615,12 @@ function install_swap(){
     chronyd -q 'server 0.id.pool.ntp.org iburst'
     chronyc sourcestats -v
     chronyc tracking -v
-    
-    wget ${REPO}files/bbr.sh &&  chmod +x bbr.sh && ./bbr.sh
+
+    wget ${REPO}files/bbr.sh && chmod +x bbr.sh && ./bbr.sh
     print_success "1GB Swap Installed"
 }
 
-function install_fail2ban(){
+function install_fail2ban() {
     clear
     print_install "Installing Fail2ban"
     apt install fail2ban -y > /dev/null 2>&1
@@ -637,7 +636,7 @@ function install_fail2ban(){
     fi
 
     clear
-    
+
     # Configure SSH banner
     echo "Banner /etc/banner" >>/etc/ssh/sshd_config
     sed -i 's@DROPBEAR_BANNER=""@DROPBEAR_BANNER="/etc/banner"@g' /etc/default/dropbear
@@ -647,7 +646,7 @@ function install_fail2ban(){
     print_success "Fail2ban Installed"
 }
 
-function install_websocket(){
+function install_websocket() {
     clear
     print_install "Installing ePro WebSocket Proxy"
     wget -O /usr/bin/ws "${REPO}files/ws" >/dev/null 2>&1
@@ -692,7 +691,7 @@ function install_websocket(){
     print_success "ePro WebSocket Proxy Installed"
 }
 
-function restart_services(){
+function restart_services() {
     clear
     print_install "Restarting All Services"
     systemctl daemon-reload
@@ -721,7 +720,7 @@ function restart_services(){
     print_success "All Services Restarted"
 }
 
-function install_menu(){
+function install_menu() {
     clear
     print_install "Installing Menu Packet"
     wget ${REPO}menu/menu.zip
@@ -732,7 +731,7 @@ function install_menu(){
     rm -rf menu.zip
 }
 
-function configure_profile(){
+function configure_profile() {
     cat >/root/.profile <<EOF
 # ~/.profile: executed by Bourne-compatible login shells.
 if [ "$BASH" ]; then
@@ -758,7 +757,7 @@ EOF
 		*/20 * * * * root /usr/local/sbin/clearlog
 		END
     chmod 644 /root/.profile
-	
+
     cat >/etc/cron.d/daily_reboot <<-END
 		SHELL=/bin/sh
 		PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
@@ -814,7 +813,7 @@ EOF
     chmod +x /etc/rc.local
 }
 
-function enable_services(){
+function enable_services() {
     systemctl daemon-reload
     systemctl start netfilter-persistent
     systemctl enable rc-local
@@ -828,7 +827,7 @@ function enable_services(){
 function install_service_monitor() {
     # Check if the script is being run with sudo
     if [[ $EUID -ne 0 ]]; then
-        echo "This script must be run as root. Please run with sudo." 
+        echo "This script must be run as root. Please run with sudo."
         exit 1
     fi
 
@@ -866,7 +865,7 @@ check_and_restart_service() {
         echo "$(date): $service_name is not running, restarting..."
         systemctl restart "$service_name"
         sleep 5
-        
+
         service_status=$(systemctl is-active "$service_name")
         if [ "$service_status" = "active" ]; then
             echo "$(date): $service_name has been restarted and is now running"
@@ -907,7 +906,7 @@ EOL
     echo "Service monitor has been installed and started."
 }
 
-function instal(){
+function instal() {
     clear
 
     is_root
