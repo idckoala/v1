@@ -747,43 +747,39 @@ EOF
     mkdir -p /root/.info
     curl -sS "ipinfo.io/org?token=7a814b6263b02c" > /root/.info/.isp
     curl -sS "ipinfo.io/city?token=7a814b6263b02c" > /root/.info/.city
-
     cat >/etc/cron.d/xp_all <<-END
-        SHELL=/bin/sh
-        PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-        2 0 * * * root /usr/local/sbin/xp
-    END
+		SHELL=/bin/sh
+		PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+		2 0 * * * root /usr/local/sbin/xp
+	END
     cat >/etc/cron.d/logclean <<-END
-        SHELL=/bin/sh
-        PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-        */20 * * * * root /usr/local/sbin/clearlog
-    END
-
+		SHELL=/bin/sh
+		PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+		*/20 * * * * root /usr/local/sbin/clearlog
+		END
     chmod 644 /root/.profile
-    
+	
     cat >/etc/cron.d/daily_reboot <<-END
-        SHELL=/bin/sh
-        PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-        0 5 * * * root /sbin/reboot
-    END
+		SHELL=/bin/sh
+		PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+		0 5 * * * root /sbin/reboot
+	END
     cat >/etc/cron.d/limit_ip <<-END
-        SHELL=/bin/sh
-        PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-        */2 * * * * root /usr/local/sbin/limit-ip
-    END
+		SHELL=/bin/sh
+		PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+		*/2 * * * * root /usr/local/sbin/limit-ip
+	END
     cat >/etc/cron.d/limit_ip2 <<-END
-        SHELL=/bin/sh
-        PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-        */2 * * * * root /usr/bin/limit-ip
-    END
-
+		SHELL=/bin/sh
+		PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+		*/2 * * * * root /usr/bin/limit-ip
+	END
     echo "*/1 * * * * root echo -n > /var/log/nginx/access.log" >/etc/cron.d/log.nginx
     echo "*/1 * * * * root echo -n > /var/log/xray/access.log" >>/etc/cron.d/log.xray
-    systemctl restart cron
-
+    service cron restart
     cat >/home/daily_reboot <<-END
-        5
-    END
+		5
+	END
 
     cat >/etc/systemd/system/rc-local.service <<EOF
 [Unit]
