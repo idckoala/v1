@@ -943,7 +943,7 @@ function instal() {
 if [ ! -d "/etc/xray" ]; then
     instal
 else
-    echo "The script seems to have been executed before. Aborting installation."
+    instal
     exit 1
 fi
 
