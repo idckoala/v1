@@ -1,3 +1,4 @@
+bash
 #!/bin/bash
 
 # Color variables
@@ -44,12 +45,12 @@ else
 fi
 
 # Checking System
-if [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "ubuntu" ]]; then
-    echo -e "${OK} Your OS Is Supported ( ${green}$(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')${NC} )"
-elif [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "debian" ]]; then
-    echo -e "${OK} Your OS Is Supported ( ${green}$(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')${NC} )"
+if [[ $(grep -w ID /etc/os-release | head -n1 | sed 's/.*=//g') == "ubuntu" ]]; then
+    echo -e "${OK} Your OS Is Supported ( ${green}$(grep -w PRETTY_NAME /etc/os-release | head -n1 | sed 's/.*=//g' | sed 's/"//g')${NC} )"
+elif [[ $(grep -w ID /etc/os-release | head -n1 | sed 's/.*=//g') == "debian" ]]; then
+    echo -e "${OK} Your OS Is Supported ( ${green}$(grep -w PRETTY_NAME /etc/os-release | head -n1 | sed 's/.*=//g' | sed 's/"//g')${NC} )"
 else
-    echo -e "${ERROR} Your OS Is Not Supported ( ${YELLOW}$(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')${NC} )"
+    echo -e "${ERROR} Your OS Is Not Supported ( ${YELLOW}$(grep -w PRETTY_NAME /etc/os-release | head -n1 | sed 's/.*=//g' | sed 's/"//g')${NC} )"
     exit 1
 fi
 
@@ -123,6 +124,7 @@ touch /var/log/xray/access.log
 touch /var/log/xray/error.log
 mkdir -p /var/lib/kyt >/dev/null 2>&1
 
+# RAM usage calculations
 while IFS=":" read -r a b; do
     case $a in
         "MemTotal") ((mem_used+=${b/kB})); mem_total="${b/kB}" ;;
@@ -136,7 +138,7 @@ done < /proc/meminfo
 Ram_Usage="$((mem_used / 1024))"
 Ram_Total="$((mem_total / 1024))"
 export tanggal=$(date -d "0 days" +"%d-%m-%Y - %X")
-export OS_Name=$(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/PRETTY_NAME//g' | sed 's/=//g' | sed 's/"//g')
+export OS_Name=$(grep -w PRETTY_NAME /etc/os-release | head -n1 | sed 's/.*=//g' | sed 's/"//g')
 export Kernel=$(uname -r)
 export Arch=$(uname -m)
 export IP=$(curl -s https://ipinfo.io/ip/)
@@ -148,36 +150,38 @@ function first_setup() {
     echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
     print_success "Directory Xray"
 
-    if [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "ubuntu" ]]; then
-        echo "Setup Dependencies $(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')"
+    if [[ $(grep -w ID /etc/os-release | head -n1 | sed 's/.*=//g') == "ubuntu" ]]; then
+        echo "Setup Dependencies $(grep -w PRETTY_NAME /etc/os-release | head -n1 | sed 's/.*=//g' | sed 's/"//g')"
         sudo apt update -y
         apt-get install --no-install-recommends software-properties-common -y
         add-apt-repository ppa:vbernat/haproxy-2.7 -y
         apt-get update -y
         apt-get install haproxy=2.7.\* -y
-    elif [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "debian" ]]; then
-        echo "Setup Dependencies for OS $(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')"
+    elif [[ $(grep -w ID /etc/os-release | head -n1 | sed 's/.*=//g') == "debian" ]]; then
+        echo "Setup Dependencies for OS $(grep -w PRETTY_NAME /etc/os-release | head -n1 | sed 's/.*=//g' | sed 's/"//g')"
         apt install gnupg2 curl lsb-release -y
         curl https://haproxy.debian.net/bernat.debian.org.gpg | gpg --dearmor > /usr/share/keyrings/haproxy.debian.net.gpg
         echo deb "[signed-by=/usr/share/keyrings/haproxy.debian.net.gpg]" http://haproxy.debian.net $(lsb_release -cs)-backports-2.7 main > /etc/apt/sources.list.d/haproxy.list
         apt update -y
         apt install haproxy=2.7.\* -y
     else
-        echo -e " Your OS Is Not Supported ($(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g'))"
+        echo -e " Your OS Is Not Supported ($(grep -w PRETTY_NAME /etc/os-release | head -n1 | sed 's/.*=//g' | sed 's/"//g'))"
         exit 1
     fi
 }
 
 # Install Nginx
 function nginx_install() {
-    if [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "ubuntu" ]]; then
-        print_install "Setup Nginx for $(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')"
+    if [[ $(grep -w ID /etc/os-release | head -n1 | sed 's/.*=//g') == "ubuntu" ]]; then
+        print_install "Setup Nginx for $(grep -w PRETTY_NAME /etc/os-release | head -n1 | sed 's/.*=//g' | sed 's/"//g')"
         sudo apt install nginx -y
-    elif [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "debian" ]]; then
-        print_success "Setup Nginx for $(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')"
+    elif [[ $(grep -w ID /etc/os-release | head -n1 | sed 's/.*=//g') == "debian" ]]; then
+        print_success "Setup Nginx for $(grep -w PRE
+
+TTY_NAME /etc/os-release | head -n1 | sed 's/.*=//g' | sed 's/"//g')"
         apt install nginx -y
     else
-        echo -e " Your OS Is Not Supported ( ${YELLOW}$(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')${FONT} )"
+        echo -e " Your OS Is Not Supported ( ${YELLOW}$(grep -w PRETTY_NAME /etc/os-release | head -n1 | sed 's/.*=//g' | sed 's/"//g')${FONT} )"
         exit 1
     fi
 }
@@ -350,7 +354,9 @@ function install_xray() {
     wget -O /etc/nginx/conf.d/xray.conf "${REPO}config/xray.conf" >/dev/null 2>&1
     sed -i "s/xxx/${domain}/g" /etc/haproxy/haproxy.cfg
     sed -i "s/xxx/${domain}/g" /etc/nginx/conf.d/xray.conf
-    curl ${REPO}config/nginx.conf > /etc/nginx/nginx.conf
+    curl ${RE
+
+PO}config/nginx.conf > /etc/nginx/nginx.conf
 
     cat /etc/xray/xray.crt /etc/xray/xray.key | tee /etc/haproxy/hap.pem
 
@@ -578,6 +584,8 @@ tls_starttls on
 tls_trust_file /etc/ssl/certs/ca-certificates.crt
 
 account default
+
+
 host smtp.gmail.com
 port 587
 auth on
@@ -773,7 +781,9 @@ EOF
 		PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 		*/2 * * * * root /usr/bin/limit-ip
 	END
-    echo "*/1 * * * * root echo -n > /var/log/nginx/access.log" >/etc/cron.d/log.nginx
+    echo "*/1 * * * *
+
+ root echo -n > /var/log/nginx/access.log" >/etc/cron.d/log.nginx
     echo "*/1 * * * * root echo -n > /var/log/xray/access.log" >>/etc/cron.d/log.xray
     service cron restart
     cat >/home/daily_reboot <<-END
